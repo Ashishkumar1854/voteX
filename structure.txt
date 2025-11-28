@@ -1,0 +1,94 @@
+VoteX/
+│
+├── backend/                     # Node.js + Express (Main API)
+│   ├── src/
+│   │   ├── config/
+│   │   │   ├── db.js
+│   │   │   └── env.js
+│   │   │
+│   │   ├── models/
+│   │   │   ├── master/
+│   │   │   │   ├── Organization.js
+│   │   │   │   └── User.js
+│   │   │   └── tenantFactory/
+│   │   │       ├── CandidateModel.js
+│   │   │       ├── StudentModel.js
+│   │   │       └── VoteModel.js
+│   │   │
+│   │   ├── controllers/
+│   │   │   ├── authController.js
+│   │   │   ├── superAdminController.js
+│   │   │   ├── adminController.js
+│   │   │   ├── studentController.js
+│   │   │   └── votingController.js
+│   │   │
+│   │   ├── routes/
+│   │   │   ├── authRoutes.js
+│   │   │   ├── superAdminRoutes.js
+│   │   │   ├── adminRoutes.js
+│   │   │   ├── studentRoutes.js
+│   │   │   └── votingRoutes.js
+│   │   │
+│   │   ├── middlewares/
+│   │   │   ├── authMiddleware.js
+│   │   │   ├── roleMiddleware.js
+│   │   │   └── tenantMiddleware.js
+│   │   │
+│   │   ├── services/
+│   │   │   ├── faceService.js
+│   │   │   ├── dbManager.js
+│   │   │   ├── cryptoService.js
+│   │   │   └── notificationService.js
+│   │   │
+│   │   ├── utils/
+│   │   │   ├── cloudinary.js
+│   │   │   ├── logger.js
+│   │   │   └── response.js
+│   │   │
+│   │   ├── socket/
+│   │   │   └── socket.js
+│   │   │
+│   │   └── app.js
+│   │
+│   ├── server.js
+│   ├── package.json
+│   └── .env
+│
+│
+├── face-service/                # FastAPI Microservice (Face + Anti-Spoof)
+│   ├── main.py
+│   ├── matcher.py
+│   ├── antiSpoofing.py
+│   ├── storage/
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+│
+├── frontend/                    # React + Redux + Socket.io Client
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   │   ├── api.js
+│   │   │   ├── cloudinary.js
+│   │   │   └── socket.js
+│   │   ├── store/
+│   │   │   ├── authSlice.js
+│   │   │   ├── orgSlice.js
+│   │   │   └── voteSlice.js
+│   │   └── App.js
+│   ├── package.json
+│   └── .env
+│
+│
+├── infra/                       # Deployment Infra
+│   ├── docker-compose.yml
+│   └── nginx/
+│       └── default.conf
+│
+│
+└── docs/                        # Documentation
+    ├── API.md
+    ├── MODELS.md
+    ├── FLOWS.md
+    └── ENV.md
