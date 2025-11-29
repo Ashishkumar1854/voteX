@@ -1,27 +1,43 @@
 {
-  "name": "backend",
+  "name": "votex-backend",
   "version": "1.0.0",
-  "main": "index.js",
+  "description": "VoteX backend (Node.js + Express) - multi-tenant voting system",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon --watch src --exec node server.js",
+    "lint": "eslint . --ext .js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
-    "axios": "^1.13.2",
-    "bcryptjs": "^3.0.3",
-    "cloudinary": "^2.8.0",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^5.1.0",
-    "express-fileupload": "^1.5.2",
+    "express": "^4.18.2",
+    "mongoose": "^7.4.0",
+    "dotenv": "^16.1.4",
+    "bcryptjs": "^2.4.3",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^9.0.0",
-    "socket.io": "^4.8.1"
+    "cors": "^2.8.5",
+    "cloudinary": "^1.38.0",
+    "express-fileupload": "^1.4.0",
+    "axios": "^1.4.0",
+    "socket.io": "^4.8.1",
+    "moment": "^2.29.4",
+    "winston": "^3.9.0",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
-  }
+    "nodemon": "^3.0.1",
+    "eslint": "^8.49.0"
+  },
+  "keywords": [
+    "voting",
+    "multi-tenant",
+    "express",
+    "mongodb",
+    "fastapi"
+  ],
+  "author": "Raj",
+  "license": "MIT"
 }
