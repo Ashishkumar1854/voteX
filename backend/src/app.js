@@ -9,6 +9,7 @@ import helmet from "helmet";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import superAdminRoutes from "./routes/superAdminRoutes.js";
+import studentRoutes from "./routes/studentRoutes.js"; // 🆕 ADD
 
 dotenv.config();
 
@@ -66,5 +67,6 @@ const base = process.env.API_BASE_PATH || "/api/v1";
 app.use(`${base}/auth`, authRoutes);
 app.use(`${base}/admin`, adminRoutes);
 app.use(`${base}/super-admin`, superAdminRoutes);
+app.use(`${base}/students`, studentRoutes); // 🆕 ADD
 
 export default app;
