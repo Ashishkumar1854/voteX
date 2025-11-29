@@ -7,12 +7,6 @@ import {
   signToken,
 } from "../services/cryptoService.js";
 
-/**
- * Register Super Admin
- * POST /auth/register-superadmin
- * Body: { name, email, password }
- * Note: in a real company create this via seed or CLI; this route can be removed later.
- */
 export async function registerSuperAdmin(req, res) {
   try {
     const { name, email, password } = req.body;
@@ -40,11 +34,6 @@ export async function registerSuperAdmin(req, res) {
   }
 }
 
-/**
- * Login (SuperAdmin / OrgAdmin)
- * POST /auth/login
- * Body: { email, password }
- */
 export async function login(req, res) {
   try {
     const { email, password } = req.body;
@@ -62,6 +51,7 @@ export async function login(req, res) {
       role: user.role,
       orgCode: user.orgCode || null,
     });
+
     return res.json({ token, role: user.role, userId: user._id });
   } catch (err) {
     console.error("login:", err);
@@ -69,11 +59,6 @@ export async function login(req, res) {
   }
 }
 
-/**
- * Apply Organization (Company admin applies)
- * POST /auth/apply-org
- * Body: { name, orgCode, adminName, adminEmail }
- */
 export async function applyOrganization(req, res) {
   try {
     const { name, orgCode, adminName, adminEmail } = req.body;
@@ -94,12 +79,10 @@ export async function applyOrganization(req, res) {
       status: "pending",
     });
 
-    // Optionally create a User record for ORG_ADMIN in master with temporary password (or send invite)
-    // We'll create an inactive ORG_ADMIN user or send invitation flow later.
-
-    return res
-      .status(201)
-      .json({ message: "Organization application received", orgId: org._id });
+    return res.status(201).json({
+      message: "Organization application received",
+      orgId: org._id,
+    });
   } catch (err) {
     console.error("applyOrganization:", err);
     return res.status(500).json({ error: "Server error" });

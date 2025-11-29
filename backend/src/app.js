@@ -5,7 +5,10 @@ import fileUpload from "express-fileupload";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import helmet from "helmet";
+
 import authRoutes from "./routes/authRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import superAdminRoutes from "./routes/superAdminRoutes.js";
 
 dotenv.config();
 
@@ -39,6 +42,7 @@ const allowed = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
+
 const corsOptions = allowed.length
   ? {
       origin: (origin, cb) =>
@@ -47,6 +51,7 @@ const corsOptions = allowed.length
           : cb(new Error("Not allowed")),
     }
   : {};
+
 app.use(cors(corsOptions));
 
 // health route
@@ -54,8 +59,12 @@ app.get("/health", (_req, res) =>
   res.json({ status: "ok", env: process.env.NODE_ENV || "development" })
 );
 
-// mount auth routes
+// Base path
 const base = process.env.API_BASE_PATH || "/api/v1";
+
+// mount routes
 app.use(`${base}/auth`, authRoutes);
+app.use(`${base}/admin`, adminRoutes);
+app.use(`${base}/super-admin`, superAdminRoutes);
 
 export default app;

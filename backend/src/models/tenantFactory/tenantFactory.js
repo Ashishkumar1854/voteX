@@ -1,38 +1,42 @@
 // src/models/tenantFactory/tenantFactory.js
-// Export functions to create tenant models bound to tenant connection
+import mongoose from "mongoose";
 
-const mongoose = require("mongoose");
+// Candidate
+const CandidateSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    symbol: { type: String },
+    photoUrl: { type: String },
+  },
+  { timestamps: true }
+);
 
-function buildTenantModels(connection) {
-  // Candidate
-  const CandidateSchema = new mongoose.Schema({
-    name: String,
-    symbol: String,
-    photo: String,
-    votes: { type: Number, default: 0 },
-  });
-
-  // Student (voter)
-  const StudentSchema = new mongoose.Schema({
+// Student (voter)
+const StudentSchema = new mongoose.Schema(
+  {
     studentId: { type: String, required: true, unique: true },
-    name: String,
-    photo: String,
+    name: { type: String },
+    photoUrl: { type: String },
     verified: { type: Boolean, default: false },
-    voted: { type: Boolean, default: false },
-  });
+    hasVoted: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
 
-  // Vote (audit log)
-  const VoteSchema = new mongoose.Schema({
-    studentId: String,
-    candidateId: mongoose.Types.ObjectId,
+// Vote (audit log)
+const VoteSchema = new mongoose.Schema(
+  {
+    studentId: { type: String },
+    candidateId: { type: mongoose.Types.ObjectId, ref: "Candidate" },
     createdAt: { type: Date, default: Date.now },
-  });
+  },
+  { timestamps: true }
+);
 
+export function createTenantModels(connection) {
   return {
     Candidate: connection.model("Candidate", CandidateSchema),
     Student: connection.model("Student", StudentSchema),
     Vote: connection.model("Vote", VoteSchema),
   };
 }
-
-module.exports = { buildTenantModels };

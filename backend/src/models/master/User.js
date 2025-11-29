@@ -17,7 +17,7 @@ const UserSchema = new mongoose.Schema(
       enum: ["SUPER_ADMIN", "ORG_ADMIN", "STUDENT"],
       default: "STUDENT",
     },
-    orgCode: { type: String, index: true, uppercase: true, trim: true }, // for ORG_ADMIN/STUDENT
+    orgCode: { type: String, index: true, uppercase: true, trim: true },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
