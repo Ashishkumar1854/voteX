@@ -35,9 +35,8 @@ export async function getTenantConnection(orgCode) {
   const uri = MONGO_BASE; // same connection string; dbName provided in options
 
   // create a new connection (separate from mongoose default)
-  const conn = await mongoose.createConnection(uri, {
-    dbName,
-    // poolSize, write concern, etc. can be tuned for prod
+  const conn = await mongoose.createConnection(process.env.MONGO_URI, {
+    dbName: `${TENANT_PREFIX}${orgCode.toLowerCase()}`,
   });
 
   // Optional: create necessary indexes/collections here by requiring tenant models

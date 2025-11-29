@@ -1,11 +1,11 @@
 // server.js
+import dotenv from "dotenv";
+dotenv.config();
+
 import http from "http";
 import app from "./src/app.js";
-import dotenv from "dotenv";
 import { connectMasterDB } from "./src/config/db.js";
 import { Server as IOServer } from "socket.io";
-
-dotenv.config();
 
 const PORT = process.env.PORT || 4000;
 
