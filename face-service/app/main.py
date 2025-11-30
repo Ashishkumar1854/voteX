@@ -1,7 +1,5 @@
 # app/main.py
-import os
 import uuid
-import shutil
 from pathlib import Path
 
 import cv2
@@ -42,7 +40,6 @@ def download_image_to_temp(url: str) -> Path:
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to download image: {e}")
 
-    # generate temp filename
     ext = ".jpg"
     temp_name = f"{uuid.uuid4().hex}{ext}"
     temp_path = TEMP_DIR / temp_name
@@ -75,23 +72,34 @@ def verify_face(payload: VerifyRequest):
 
         bbox = detect_face_bbox(image)
         if bbox is None:
+            # No face found
             return VerifyResponse(
-                verified=False, confidence=0.0, spoof=False, faceRef=None
+                verified=False,
+                confidence=0.0,
+                spoof=False,
+                faceRef=None,
             )
 
         face_img = crop_face(image, bbox)
+        if face_img is None:
+            return VerifyResponse(
+                verified=False,
+                confidence=0.0,
+                spoof=False,
+                faceRef=None,
+            )
+
         is_spoof, live_score = check_spoof(face_img)
 
         verified = (not is_spoof) and (live_score >= 0.5)
 
         return VerifyResponse(
-            verified=verified,
+            verified=bool(verified),
             confidence=float(live_score),
             spoof=bool(is_spoof),
-            faceRef=None,
+            faceRef=None,   # future: here we can send embedding id
         )
     finally:
-        # best-effort cleanup
         if temp_path and temp_path.exists():
             try:
                 temp_path.unlink()

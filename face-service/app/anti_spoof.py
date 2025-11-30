@@ -45,10 +45,7 @@ def check_spoof(face_img: np.ndarray):
     color_std = compute_color_var(face_img)
 
     # Heuristic thresholds (tune later):
-    # - blur too low => probably blurred or screen
-    # - brightness too low or high => doubt
-    # - extremely low color variance => printed or screen
-    blur_ok = blur > 50.0      # below this, maybe spoof
+    blur_ok = blur > 50.0       # below this, maybe spoof / screen
     bright_ok = 40.0 < bright < 220.0
     color_ok = color_std > 10.0
 
@@ -57,7 +54,6 @@ def check_spoof(face_img: np.ndarray):
         if cond:
             liveness_score += 1.0 / 3.0
 
-    # If 2 or more checks fail, mark as spoof
     failed_checks = sum([not blur_ok, not bright_ok, not color_ok])
     is_spoof = failed_checks >= 2
 
