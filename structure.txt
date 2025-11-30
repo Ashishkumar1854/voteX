@@ -92,3 +92,22 @@ VoteX/
     ├── MODELS.md
     ├── FLOWS.md
     └── ENV.md
+
+
+
+
+
+
+VoteX/
+├── backend/
+│   └── ... (already done, untouched)
+│
+└── face-service/
+    ├── app/
+    │   ├── main.py          # FastAPI app + /verify_face route
+    │   ├── matcher.py       # Face detection utilities
+    │   ├── anti_spoof.py    # Anti-spoof heuristics (blur/brightness)
+    │   └── storage/
+    │       └── temp/        # Downloaded images temporary
+    ├── requirements.txt
+    └── Dockerfile           # For future prod deploy
