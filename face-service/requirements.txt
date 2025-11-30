@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+numpy
+opencv-python-headless
+Pillow
+requests
+python-multipart
+
+# For future advanced embeddings + anti-spoof (Phase 2.3+)
+# insightface
+# onnxruntime
