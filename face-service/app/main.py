@@ -7,18 +7,17 @@ import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from .matcher import (
-    detect_face_bbox,
-    crop_face,
+from .matcher import detect_face_bbox, crop_face
+from .embedding_service import (
     extract_embedding,
     save_embedding,
-    compare_embeddings,
+    match_embedding
 )
 from .anti_spoof import check_spoof
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMP_DIR = BASE_DIR / "storage" / "temp"
-TEMP_DIR.mkdir(exist_ok=True, parents=True)
+TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
 
 class VerifyRequest(BaseModel):
@@ -113,7 +112,7 @@ def match_face(payload: MatchRequest):
         if spoof:
             return MatchResponse(False, float(score), True)
 
-        verified, conf = compare_embeddings(payload.faceRef, face)
+        verified, conf = match_embedding(payload.faceRef, face)
         return MatchResponse(bool(verified), float(conf), False)
 
     finally:
