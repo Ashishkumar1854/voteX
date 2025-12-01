@@ -6,16 +6,14 @@ import { tenantMiddleware } from "../middlewares/tenantMiddleware.js";
 import {
   addCandidate,
   listCandidates,
-} from "../controllers/adminController.js";
-import {
   getPendingStudents,
   approveStudent,
   rejectStudent,
-} from "../controllers/studentController.js";
+} from "../controllers/adminController.js";
 
 const router = express.Router();
 
-// Candidate Controls
+// CANDIDATES
 router.post(
   "/candidates",
   authMiddleware,
@@ -23,6 +21,7 @@ router.post(
   tenantMiddleware,
   addCandidate
 );
+
 router.get(
   "/candidates",
   authMiddleware,
@@ -31,7 +30,7 @@ router.get(
   listCandidates
 );
 
-// Student Approval System
+// STUDENT APPROVAL
 router.get(
   "/students/pending",
   authMiddleware,
@@ -39,6 +38,7 @@ router.get(
   tenantMiddleware,
   getPendingStudents
 );
+
 router.post(
   "/students/:id/approve",
   authMiddleware,
@@ -46,6 +46,7 @@ router.post(
   tenantMiddleware,
   approveStudent
 );
+
 router.post(
   "/students/:id/reject",
   authMiddleware,
