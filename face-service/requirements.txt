@@ -9,3 +9,6 @@ python-multipart
 # For future advanced embeddings + anti-spoof (Phase 2.3+)
 # insightface
 # onnxruntime
+
+face-recognition
+dlib

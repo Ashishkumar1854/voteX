@@ -1,110 +1,124 @@
 # app/main.py
 import uuid
 from pathlib import Path
-
 import cv2
 import numpy as np
 import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
-from .matcher import detect_face_bbox, crop_face
+from .matcher import (
+    detect_face_bbox,
+    crop_face,
+    extract_embedding,
+    save_embedding,
+    compare_embeddings,
+)
 from .anti_spoof import check_spoof
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMP_DIR = BASE_DIR / "storage" / "temp"
-TEMP_DIR.mkdir(parents=True, exist_ok=True)
+TEMP_DIR.mkdir(exist_ok=True, parents=True)
 
 
 class VerifyRequest(BaseModel):
     imageUrl: str
+    orgId: str | None = None
+    erpId: str | None = None
 
 
 class VerifyResponse(BaseModel):
     verified: bool
     confidence: float
     spoof: bool
-    faceRef: str | None = None  # reserved for future embedding id
+    faceRef: str | None = None
 
 
-app = FastAPI(title="VoteX Face Service", version="0.1.0")
+class MatchRequest(BaseModel):
+    imageUrl: str
+    faceRef: str
 
 
-def download_image_to_temp(url: str) -> Path:
-    """
-    Download image from Cloudinary URL (or any URL) to temp folder.
-    """
+class MatchResponse(BaseModel):
+    verified: bool
+    confidence: float
+    spoof: bool
+
+
+app = FastAPI(title="VoteX Face Service", version="0.2.0")
+
+
+def download(url: str) -> Path:
     try:
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
     except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Failed to download image: {e}")
-
-    ext = ".jpg"
-    temp_name = f"{uuid.uuid4().hex}{ext}"
-    temp_path = TEMP_DIR / temp_name
-
-    with open(temp_path, "wb") as f:
-        f.write(resp.content)
-
-    return temp_path
+        raise HTTPException(400, f"Download failed: {e}")
+    temp = TEMP_DIR / f"{uuid.uuid4().hex}.jpg"
+    temp.write_bytes(resp.content)
+    return temp
 
 
-def load_image(path: Path) -> np.ndarray:
+def load_img(path: Path):
     img = cv2.imread(str(path))
     if img is None:
-        raise HTTPException(status_code=400, detail="Unable to decode image")
+        raise HTTPException(400, "Invalid image")
     return img
 
 
 @app.post("/verify_face", response_model=VerifyResponse)
 def verify_face(payload: VerifyRequest):
-    """
-    1) Download image from URL
-    2) Detect face
-    3) Run basic anti-spoof check
-    4) Return verified + spoof + confidence
-    """
-    temp_path = None
+    tmp = None
     try:
-        temp_path = download_image_to_temp(payload.imageUrl)
-        image = load_image(temp_path)
+        tmp = download(payload.imageUrl)
+        img = load_img(tmp)
 
-        bbox = detect_face_bbox(image)
-        if bbox is None:
-            # No face found
-            return VerifyResponse(
-                verified=False,
-                confidence=0.0,
-                spoof=False,
-                faceRef=None,
-            )
+        bbox = detect_face_bbox(img)
+        face = crop_face(img, bbox)
+        if face is None:
+            return VerifyResponse(False, 0.0, False, None)
 
-        face_img = crop_face(image, bbox)
-        if face_img is None:
-            return VerifyResponse(
-                verified=False,
-                confidence=0.0,
-                spoof=False,
-                faceRef=None,
-            )
+        spoof, score = check_spoof(face)
+        if spoof:
+            return VerifyResponse(False, float(score), True, None)
 
-        is_spoof, live_score = check_spoof(face_img)
+        emb = extract_embedding(face)
+        if emb is None:
+            return VerifyResponse(False, float(score), False, None)
 
-        verified = (not is_spoof) and (live_score >= 0.5)
+        faceRef = None
+        if payload.orgId and payload.erpId:
+            faceRef = save_embedding(payload.orgId, payload.erpId, emb)
 
-        return VerifyResponse(
-            verified=bool(verified),
-            confidence=float(live_score),
-            spoof=bool(is_spoof),
-            faceRef=None,   # future: here we can send embedding id
-        )
+        return VerifyResponse(True, float(score), False, faceRef)
+
     finally:
-        if temp_path and temp_path.exists():
-            try:
-                temp_path.unlink()
-            except Exception:
-                pass
+        if tmp and tmp.exists():
+            tmp.unlink(missing_ok=True)
+
+
+@app.post("/match_face", response_model=MatchResponse)
+def match_face(payload: MatchRequest):
+    tmp = None
+    try:
+        tmp = download(payload.imageUrl)
+        img = load_img(tmp)
+
+        bbox = detect_face_bbox(img)
+        face = crop_face(img, bbox)
+        if face is None:
+            return MatchResponse(False, 0.0, False)
+
+        spoof, score = check_spoof(face)
+        if spoof:
+            return MatchResponse(False, float(score), True)
+
+        verified, conf = compare_embeddings(payload.faceRef, face)
+        return MatchResponse(bool(verified), float(conf), False)
+
+    finally:
+        if tmp and tmp.exists():
+            tmp.unlink(missing_ok=True)
 
 
 @app.get("/health")

@@ -56,7 +56,8 @@ export async function registerStudent(req, res) {
       return res.status(400).json({ error: "Face image required" });
     }
 
-    const faceResult = await verifyFace(imageUrl);
+    // const faceResult = await verifyFace(imageUrl);
+    const faceResult = await verifyFace(imageUrl, orgCode, erpId);
 
     if (!faceResult || !faceResult.verified || faceResult.spoof) {
       return res.status(400).json({
