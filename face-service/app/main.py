@@ -8,11 +8,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from .matcher import detect_face_bbox, crop_face
-from .embedding_service import (
-    extract_embedding,
-    save_embedding,
-    match_embedding
-)
+from .embedding_service import extract_embedding, save_embedding, match_embedding
 from .anti_spoof import check_spoof
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -74,22 +70,43 @@ def verify_face(payload: VerifyRequest):
 
         bbox = detect_face_bbox(img)
         face = crop_face(img, bbox)
+
         if face is None:
-            return VerifyResponse(False, 0.0, False, None)
+            return VerifyResponse(
+                verified=False,
+                confidence=0.0,
+                spoof=False,
+                faceRef=None
+            )
 
         spoof, score = check_spoof(face)
         if spoof:
-            return VerifyResponse(False, float(score), True, None)
+            return VerifyResponse(
+                verified=False,
+                confidence=float(score),
+                spoof=True,
+                faceRef=None
+            )
 
         emb = extract_embedding(face)
         if emb is None:
-            return VerifyResponse(False, float(score), False, None)
+            return VerifyResponse(
+                verified=False,
+                confidence=float(score),
+                spoof=False,
+                faceRef=None
+            )
 
         faceRef = None
         if payload.orgId and payload.erpId:
             faceRef = save_embedding(payload.orgId, payload.erpId, emb)
 
-        return VerifyResponse(True, float(score), False, faceRef)
+        return VerifyResponse(
+            verified=True,
+            confidence=float(score),
+            spoof=False,
+            faceRef=faceRef
+        )
 
     finally:
         if tmp and tmp.exists():
@@ -105,15 +122,28 @@ def match_face(payload: MatchRequest):
 
         bbox = detect_face_bbox(img)
         face = crop_face(img, bbox)
+
         if face is None:
-            return MatchResponse(False, 0.0, False)
+            return MatchResponse(
+                verified=False,
+                confidence=0.0,
+                spoof=False
+            )
 
         spoof, score = check_spoof(face)
         if spoof:
-            return MatchResponse(False, float(score), True)
+            return MatchResponse(
+                verified=False,
+                confidence=float(score),
+                spoof=True
+            )
 
         verified, conf = match_embedding(payload.faceRef, face)
-        return MatchResponse(bool(verified), float(conf), False)
+        return MatchResponse(
+            verified=bool(verified),
+            confidence=float(conf),
+            spoof=False
+        )
 
     finally:
         if tmp and tmp.exists():

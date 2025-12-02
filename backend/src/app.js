@@ -6,19 +6,20 @@ import morgan from "morgan";
 import dotenv from "dotenv";
 import helmet from "helmet";
 
+import voteRoutes from "./routes/voteRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import superAdminRoutes from "./routes/superAdminRoutes.js";
-import studentRoutes from "./routes/studentRoutes.js"; // 🆕 ADD
+import studentRoutes from "./routes/studentRoutes.js";
 
 dotenv.config();
 
 const app = express();
 
-// Basic security headers
+// Security middleware
 app.use(helmet());
 
-// Logging
+// Logging only in dev
 if (process.env.NODE_ENV !== "production") {
   app.use(morgan("dev"));
 }
@@ -38,35 +39,37 @@ app.use(
   })
 );
 
-// CORS
+// CORS setup
 const allowed = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
 
-const corsOptions = allowed.length
-  ? {
-      origin: (origin, cb) =>
-        allowed.includes(origin) || !origin
-          ? cb(null, true)
-          : cb(new Error("Not allowed")),
-    }
-  : {};
+const corsOptions =
+  allowed.length > 0
+    ? {
+        origin: (origin, cb) =>
+          !origin || allowed.includes(origin)
+            ? cb(null, true)
+            : cb(new Error("Not allowed by CORS")),
+      }
+    : {};
 
 app.use(cors(corsOptions));
 
-// health route
-app.get("/health", (_req, res) =>
-  res.json({ status: "ok", env: process.env.NODE_ENV || "development" })
-);
-
-// Base path
+// Base Path for API
 const base = process.env.API_BASE_PATH || "/api/v1";
 
-// mount routes
+// Mount routes (All routes under base path ✔)
 app.use(`${base}/auth`, authRoutes);
 app.use(`${base}/admin`, adminRoutes);
 app.use(`${base}/super-admin`, superAdminRoutes);
-app.use(`${base}/students`, studentRoutes); // 🆕 ADD
+app.use(`${base}/students`, studentRoutes);
+app.use(`${base}/vote`, voteRoutes); // 🆕 Correctly placed
+
+// Health Check Route
+app.get("/health", (_req, res) =>
+  res.json({ status: "ok", env: process.env.NODE_ENV || "development" })
+);
 
 export default app;
