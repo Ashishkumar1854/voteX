@@ -45,7 +45,6 @@ export async function registerStudent(req, res) {
 
     // Face verification + embedding save
     const faceResult = await verifyFace(imageUrl, orgCode, erpId);
-    console.log("🔍 FaceResult:", faceResult);
     if (!faceResult?.verified || faceResult?.spoof) {
       return res.status(400).json({ error: "Face verification failed" });
     }
@@ -94,7 +93,7 @@ export async function studentLogin(req, res) {
 
     const token = jwt.sign(
       {
-        id: student._id,
+        sub: student._id, // FIXED ✔
         role: "STUDENT",
         orgCode,
         faceRef: student.faceRef,
@@ -138,14 +137,14 @@ export async function approveStudent(req, res) {
     student.isApproved = true;
     await student.save();
 
-    res.json({ message: "Student approved" });
+    res.json({ message: "Student approved successfully", student });
   } catch (err) {
     console.error("approveStudent:", err);
     res.status(500).json({ error: "Server error" });
   }
 }
 
-// ---------------- REJECT Student + remove photo ----------------
+// ---------------- REJECT Student ----------------
 export async function rejectStudent(req, res) {
   try {
     const { Student } = req.tenantModels;
