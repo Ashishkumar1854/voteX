@@ -2,7 +2,6 @@
 import uuid
 from pathlib import Path
 import cv2
-import numpy as np
 import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
@@ -40,7 +39,7 @@ class MatchResponse(BaseModel):
     spoof: bool
 
 
-app = FastAPI(title="VoteX Face Service", version="0.2.0")
+app = FastAPI(title="VoteX Face Service", version="0.3.1")
 
 
 def download(url: str) -> Path:
@@ -48,16 +47,19 @@ def download(url: str) -> Path:
         resp = requests.get(url, timeout=10)
         resp.raise_for_status()
     except Exception as e:
-        raise HTTPException(400, f"Download failed: {e}")
+        print("❌ Download Failed:", e)
+        raise HTTPException(status_code=400, detail=f"Download failed: {e}")
+
     temp = TEMP_DIR / f"{uuid.uuid4().hex}.jpg"
     temp.write_bytes(resp.content)
+    print(f"📥 Downloaded temp file: {temp}")
     return temp
 
 
 def load_img(path: Path):
     img = cv2.imread(str(path))
     if img is None:
-        raise HTTPException(400, "Invalid image")
+        raise HTTPException(status_code=400, detail="Invalid or unreadable image")
     return img
 
 
@@ -69,30 +71,32 @@ def verify_face(payload: VerifyRequest):
         img = load_img(tmp)
 
         bbox = detect_face_bbox(img)
-        face = crop_face(img, bbox)
+        print("📍BBox:", bbox)
 
+        face = crop_face(img, bbox)
         if face is None:
+            print("❌ No face cropped")
             return VerifyResponse(
-                verified=False,
-                confidence=0.0,
-                spoof=False,
-                faceRef=None
+                verified=False, confidence=0.0, spoof=False, faceRef=None
             )
 
-        spoof, score = check_spoof(face)
+        spoof, spoof_score = check_spoof(face)
+        print(f"🛑 Spoof Check: spoof={spoof}, score={spoof_score}")
+
         if spoof:
             return VerifyResponse(
                 verified=False,
-                confidence=float(score),
+                confidence=float(spoof_score),
                 spoof=True,
                 faceRef=None
             )
 
         emb = extract_embedding(face)
         if emb is None:
+            print("❌ Embedding extraction FAILED")
             return VerifyResponse(
                 verified=False,
-                confidence=float(score),
+                confidence=float(spoof_score),
                 spoof=False,
                 faceRef=None
             )
@@ -103,14 +107,15 @@ def verify_face(payload: VerifyRequest):
 
         return VerifyResponse(
             verified=True,
-            confidence=float(score),
+            confidence=float(spoof_score),
             spoof=False,
             faceRef=faceRef
         )
 
     finally:
         if tmp and tmp.exists():
-            tmp.unlink(missing_ok=True)
+            tmp.unlink()
+            print("🧹 Deleted temp file")
 
 
 @app.post("/match_face", response_model=MatchResponse)
@@ -122,12 +127,10 @@ def match_face(payload: MatchRequest):
 
         bbox = detect_face_bbox(img)
         face = crop_face(img, bbox)
-
         if face is None:
+            print("❌ No face to match")
             return MatchResponse(
-                verified=False,
-                confidence=0.0,
-                spoof=False
+                verified=False, confidence=0.0, spoof=False
             )
 
         spoof, score = check_spoof(face)
@@ -139,6 +142,8 @@ def match_face(payload: MatchRequest):
             )
 
         verified, conf = match_embedding(payload.faceRef, face)
+        print(f"🎯 Match → verified={verified}, confidence={conf}")
+
         return MatchResponse(
             verified=bool(verified),
             confidence=float(conf),
@@ -147,7 +152,8 @@ def match_face(payload: MatchRequest):
 
     finally:
         if tmp and tmp.exists():
-            tmp.unlink(missing_ok=True)
+            tmp.unlink()
+            print("🧹 Deleted temp file")
 
 
 @app.get("/health")
