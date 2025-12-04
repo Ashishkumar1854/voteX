@@ -1,16 +1,13 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
+import Login from "./pages/Auth/Login";
+import Register from "./pages/Auth/Register";
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* STUDENT */}
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-
-        {/* ADMIN & SUPER ADMIN pages added later */}
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Routes>
     </BrowserRouter>
   );
