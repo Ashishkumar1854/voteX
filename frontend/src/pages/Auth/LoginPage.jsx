@@ -1,7 +1,7 @@
-// src/pages/auth/LoginPage.jsx
+// src/pages/Auth/LoginPage.jsx
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { loginThunk } from "../../store/authSlice";
 import Loader from "../../components/Loader";
 
@@ -19,7 +19,6 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (status === "succeeded" && user) {
-      // Role-based redirect
       let target = "/login";
 
       if (user.role === "SUPER_ADMIN") target = "/super-admin";
@@ -46,11 +45,12 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950">
-      <div className="w-full max-w-md bg-slate-900/70 border border-slate-700 rounded-2xl p-8 shadow-xl">
-        <h1 className="text-2xl font-semibold text-white mb-2 text-center">
+      <div className="w-full max-w-md bg-slate-900/70 border border-slate-700 rounded-2xl p-8 shadow-xl space-y-5">
+        <h1 className="text-2xl font-semibold text-white text-center">
           🗳 VoteX Login
         </h1>
-        <p className="text-sm text-slate-400 mb-6 text-center">
+
+        <p className="text-sm text-slate-400 text-center">
           Super Admin / Org Admin / Student
         </p>
 
@@ -60,11 +60,12 @@ const LoginPage = () => {
             <input
               type="email"
               name="email"
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
               placeholder="you@example.com"
               value={form.email}
               onChange={handleChange}
               autoComplete="email"
+              required
             />
           </div>
 
@@ -75,11 +76,12 @@ const LoginPage = () => {
             <input
               type="password"
               name="password"
-              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500"
               placeholder="••••••••"
               value={form.password}
               onChange={handleChange}
               autoComplete="current-password"
+              required
             />
           </div>
 
@@ -92,16 +94,25 @@ const LoginPage = () => {
           <button
             type="submit"
             disabled={status === "loading"}
-            className="w-full flex items-center justify-center rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 px-4 py-2 text-sm font-medium text-white transition"
+            className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:bg-indigo-800 py-2 text-sm text-white rounded-lg transition"
           >
-            {status === "loading" ? "Logging in..." : "Login"}
+            {status === "loading" ? <Loader /> : "Login"}
           </button>
         </form>
 
+        {/* 🎯 Student Registration CTA */}
+        <p className="text-xs text-center text-slate-400">
+          Not registered yet?{" "}
+          <Link to="/register" className="text-indigo-400 hover:underline">
+            Register as Student
+          </Link>
+        </p>
+
         <div className="mt-4 text-xs text-slate-500 text-center">
-          This connects to your Node backend: <br />
+          Backend API:{" "}
           <code className="text-indigo-300">
-            {import.meta?.env?.VITE_API_BASE_URL || "http://localhost:5000/api"}
+            {import.meta?.env?.VITE_API_BASE_URL ||
+              "http://localhost:4000/api/v1"}
           </code>
         </div>
       </div>

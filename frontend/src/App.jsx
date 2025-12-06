@@ -3,7 +3,8 @@ import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-import LoginPage from "./pages/auth/LoginPage";
+import LoginPage from "./pages/Auth/LoginPage";
+import Register from "./pages/Auth/Register";
 import SuperAdminDashboard from "./pages/superadmin/SuperAdminDashboard";
 import OrgAdminDashboard from "./pages/orgadmin/OrgAdminDashboard";
 import StudentVotingPage from "./pages/student/StudentVotingPage";
@@ -25,8 +26,10 @@ function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <Routes>
+        {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
-
+        <Route path="/register" element={<Register />} /> {/* ADDED HERE */}
+        {/* Super Admin Dashboard (Protected) */}
         <Route
           path="/super-admin"
           element={
@@ -35,7 +38,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        {/* Organization Admin Dashboard (Protected) */}
         <Route
           path="/admin"
           element={
@@ -44,7 +47,7 @@ function App() {
             </ProtectedRoute>
           }
         />
-
+        {/* Student Voting (Protected) */}
         <Route
           path="/vote"
           element={
@@ -53,11 +56,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* default home */}
+        {/* Default redirect */}
         <Route path="/" element={getHomeRedirect()} />
-
-        {/* fallback */}
+        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </div>
